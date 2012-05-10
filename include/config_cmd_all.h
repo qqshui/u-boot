@@ -36,6 +36,7 @@
 #define CONFIG_CMD_EXT2		/* EXT2 Support			*/
 #define CONFIG_CMD_EXT4		/* EXT4 Support			*/
 #define CONFIG_CMD_FAT		/* FAT support			*/
+#define CONFIG_CMD_ZFS		/* ZFS support			*/
 #define CONFIG_CMD_FDC		/* Floppy Disk Support		*/
 #define CONFIG_CMD_FDOS		/* Floppy DOS support		*/
 #define CONFIG_CMD_FLASH	/* flinfo, erase, protect	*/
