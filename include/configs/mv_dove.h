@@ -127,6 +127,7 @@ extern unsigned int mvTclkGet(void);
 #define CONFIG_CMD_EXT2
 #undef CONFIG_CMD_JFFS2
 #define CONFIG_CMD_FAT
+#define CONFIG_CMD_ZFS
 #define CONFIG_SUPPORT_VFAT
 
 #undef CONFIG_SYS_USE_UBI
