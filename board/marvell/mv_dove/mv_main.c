@@ -705,7 +705,7 @@ ethaddr=${ethaddr} ${netbsd_netconfig}");
 	setenv("ide_started","0");
 	setenv("usb_started","0");
 	setenv("trydev", "usb mmc ide");
-	setenv("trypart", "0 1");
+	setenv("trypart", "1 2");
 	setenv("trydir", "/ /boot/");
 	setenv("tryfs", "ext2 fat ext4 zfs");
 
