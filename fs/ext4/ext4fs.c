@@ -1,16 +1,16 @@
 /*
  * (C) Copyright 2011 - 2012 Samsung Electronics
  * EXT4 filesystem implementation in Uboot by
- * Uma Shankar &lt;<A HREF="http://lists.denx.de/mailman/listinfo/u-boot">uma.shankar at samsung.com</A>>
- * Manjunatha C Achar &lt;<A HREF="http://lists.denx.de/mailman/listinfo/u-boot">a.manjunatha at samsung.com</A>>
+ * Uma Shankar <uma.shankar at samsung.com>
+ * Manjunatha C Achar <a.manjunatha at samsung.com>
  *
  * ext4ls and ext4load : Based on ext2 ls and load support in Uboot.
  *		       Ext4 read optimization taken from Open-Moko
  *		       Qi bootloader
  *
  * (C) Copyright 2004
- * esd gmbh &lt;www.esd-electronics.com>
- * Reinhard Arlt &lt;<A HREF="http://lists.denx.de/mailman/listinfo/u-boot">reinhard.arlt at esd-electronics.com</A>>
+ * esd gmbh <www.esd-electronics.com>
+ * Reinhard Arlt <reinhard.arlt at esd-electronics.com>
  *
  * based on code from grub2 fs/ext2.c and fs/fshelp.c by
  * GRUB  --  GRand Unified Bootloader
@@ -95,16 +95,16 @@ void ext4fs_free_node(struct ext2fs_node *node, struct ext2fs_node *currroot)
  * Optimized read file API : collects and defers contiguous sector
  * reads into one potentially more efficient larger sequential read action
  */
-int ext4fs_read_file(struct ext2fs_node *node, int pos,
+int ext4fs_read_file(struct ext2fs_node *node, unsigned long pos,
 		     unsigned int len, char *buf)
 {
 	int i;
-	int blockcnt;
+	unsigned long blockcnt;
 	int log2blocksize = LOG2_EXT2_BLOCK_SIZE(node->data);
 	int blocksize = 1 << (log2blocksize + DISK_SECTOR_BITS);
 	unsigned int filesize = __le32_to_cpu(node->inode.size);
 	int previous_block_number = -1;
-	int delayed_start = 0;
+	unsigned long delayed_start = 0;
 	int delayed_extent = 0;
 	int delayed_skipfirst = 0;
 	int delayed_next = 0;
@@ -119,14 +119,12 @@ int ext4fs_read_file(struct ext2fs_node *node, int pos,
 
 	for (i = pos / blocksize; i < blockcnt; i++) {
 		int blknr;
-		int blockoff = pos % blocksize;
+		unsigned long blockoff = pos % blocksize;
 		int blockend = blocksize;
 		int skipfirst = 0;
 		blknr = read_allocated_block(&(node->inode), i);
 		if (blknr < 0)
 			return -1;
-
-		blknr = blknr << log2blocksize;
 
 		/* Last block.  */
 		if (i == blockcnt - 1) {
@@ -137,11 +135,15 @@ int ext4fs_read_file(struct ext2fs_node *node, int pos,
 				blockend = blocksize;
 		}
 
+
 		/* First block. */
 		if (i == pos / blocksize) {
 			skipfirst = blockoff;
 			blockend -= skipfirst;
 		}
+
+		blknr = blknr << log2blocksize;
+
 		if (blknr) {
 			int status;
 
@@ -188,6 +190,7 @@ int ext4fs_read_file(struct ext2fs_node *node, int pos,
 		}
 		buf += blocksize - skipfirst;
 	}
+
 	if (previous_block_number != -1) {
 		/* spill */
 		status = ext4fs_devread(delayed_start,
