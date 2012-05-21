@@ -49,9 +49,6 @@
 #error DOS or EFI partition support must be selected
 #endif
 
-//uint64_t total_sector;
-//uint64_t part_offset;
-
 #define DOS_PART_MAGIC_OFFSET	0x1fe
 #define DOS_FS_TYPE_OFFSET	0x36
 #define DOS_FS32_TYPE_OFFSET	0x52
@@ -71,6 +68,9 @@ static int do_zfs_load(cmd_tbl_t *cmdtp, int flag, int argc,
 	const char *addr_str;
 	struct zfs_file zfile;
 	struct device_s vdev;
+
+	if (argc < 3)
+		return CMD_RET_USAGE;
 
 	count = 0;
 	addr = simple_strtoul(argv[3], NULL, 16);

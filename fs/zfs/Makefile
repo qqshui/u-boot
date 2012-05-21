@@ -1,9 +1,9 @@
 #
 # (C) Copyright 2006
-# Wolfgang Denk, DENX Software Engineering, <A HREF="http://lists.denx.de/mailman/listinfo/u-boot">wd at denx.de.</A>
+# Wolfgang Denk, DENX Software Engineering, <wd at denx.de>
 #
 # (C) Copyright 2003
-# Pavel Bartusek, Sysgo Real-Time Solutions AG, <A HREF="http://lists.denx.de/mailman/listinfo/u-boot">pba at sysgo.de</A>
+# Pavel Bartusek, Sysgo Real-Time Solutions AG, <pba at sysgo.de>
 #
 #
 # See file CREDITS for list of people who contributed to this
@@ -27,7 +27,7 @@
 
 include $(TOPDIR)/config.mk
 
-LIB	= $(obj)libzfs.a
+LIB	= $(obj)libzfs.o
 
 AOBJS	=
 COBJS-$(CONFIG_CMD_ZFS) := dev.o zfs.o zfs_fletcher.o zfs_sha256.o zfs_lzjb.o
@@ -39,8 +39,7 @@ OBJS	:= $(addprefix $(obj),$(AOBJS) $(COBJS-y))
 all:	$(LIB) $(AOBJS)
 
 $(LIB):	$(obj).depend $(OBJS)
-	$(AR) $(ARFLAGS) $@ $(OBJS)
-#	$(call cmd_link_o_target, $(OBJS))
+	$(call cmd_link_o_target, $(OBJS))
 
 #########################################################################
 
