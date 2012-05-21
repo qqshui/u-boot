@@ -27,7 +27,7 @@
 
 include $(TOPDIR)/config.mk
 
-LIB	= $(obj)libext4fs.a
+LIB	= $(obj)libext4fs.o
 
 AOBJS	=
 COBJS-$(CONFIG_CMD_EXT4) := ext4fs.o ext4_common.o dev.o
@@ -43,8 +43,7 @@ OBJS	:= $(addprefix $(obj),$(AOBJS) $(COBJS-y))
 all:	$(LIB) $(AOBJS)
 
 $(LIB):	$(obj).depend $(OBJS)
-	$(AR) $(ARFLAGS) $@ $(OBJS)
-#	$(call cmd_link_o_target, $(OBJS))
+	$(call cmd_link_o_target, $(OBJS))
 
 #########################################################################
 

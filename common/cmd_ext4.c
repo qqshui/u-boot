@@ -61,6 +61,12 @@
 #error DOS or EFI partition support must be selected
 #endif
 
+#ifdef	EXT4_DEBUG
+#define	PRINTF(fmt,args...)	printf (fmt ,##args)
+#else
+#define PRINTF(fmt,args...)
+#endif
+
 uint64_t total_sector;
 uint64_t part_offset;
 #if defined(CONFIG_CMD_EXT4_WRITE)
@@ -72,101 +78,105 @@ static uint16_t cur_part = 1;
 #define DOS_FS_TYPE_OFFSET	0x36
 #define DOS_FS32_TYPE_OFFSET	0x52
 
+
+
 static int do_ext4_load(cmd_tbl_t *cmdtp, int flag, int argc,
 						char *const argv[])
 {
 	char *filename = NULL;
 	char *ep;
-	int dev;
-	unsigned long part = 1;
-	ulong addr = 0;
-	ulong part_length;
+	int dev, part = 1;
+	ulong addr = 0, part_length;
 	int filelen;
 	disk_partition_t info;
-	struct ext_filesystem *fs;
-	char buf[12];
+	block_dev_desc_t *dev_desc = NULL;
+	char buf [12];
 	unsigned long count;
-	const char *addr_str;
+	char *addr_str;
 
-	count = 0;
-	addr = simple_strtoul(argv[3], NULL, 16);
-	filename = getenv("bootfile");
 	switch (argc) {
 	case 3:
 		addr_str = getenv("loadaddr");
 		if (addr_str != NULL)
-			addr = simple_strtoul(addr_str, NULL, 16);
+			addr = simple_strtoul (addr_str, NULL, 16);
 		else
 			addr = CONFIG_SYS_LOAD_ADDR;
 
+		filename = getenv ("bootfile");
+		count = 0;
 		break;
 	case 4:
+		addr = simple_strtoul (argv[3], NULL, 16);
+		filename = getenv ("bootfile");
+		count = 0;
 		break;
 	case 5:
+		addr = simple_strtoul (argv[3], NULL, 16);
 		filename = argv[4];
+		count = 0;
 		break;
 	case 6:
+		addr = simple_strtoul (argv[3], NULL, 16);
 		filename = argv[4];
-		count = simple_strtoul(argv[5], NULL, 16);
+		count = simple_strtoul (argv[5], NULL, 16);
 		break;
 
 	default:
-		return cmd_usage(cmdtp);
+		return CMD_RET_USAGE;
 	}
 
 	if (!filename) {
-		puts("** No boot file defined **\n");
+		puts ("** No boot file defined **\n");
 		return 1;
 	}
 
-	dev = (int)simple_strtoul(argv[2], &ep, 16);
-	ext4_dev_desc = get_dev(argv[1], dev);
-	if (ext4_dev_desc == NULL) {
-		printf("** Block device %s %d not supported\n", argv[1], dev);
+	dev = (int)simple_strtoul (argv[2], &ep, 16);
+	dev_desc = get_dev(argv[1],dev);
+	if (dev_desc==NULL) {
+		printf ("** Block device %s %d not supported\n", argv[1], dev);
 		return 1;
 	}
-	if (init_fs(ext4_dev_desc))
-		return 1;
-
-	fs = get_fs();
 	if (*ep) {
 		if (*ep != ':') {
-			puts("** Invalid boot device, use `dev[:part]' **\n");
+			puts ("** Invalid boot device, use `dev[:part]' **\n");
 			return 1;
 		}
-		part = simple_strtoul(++ep, NULL, 16);
+		part = (int)simple_strtoul(++ep, NULL, 16);
 	}
+
+	PRINTF("Using device %s%d, partition %d\n", argv[1], dev, part);
 
 	if (part != 0) {
-		if (get_partition_info(fs->dev_desc, part, &info)) {
-			printf("** Bad partition %lu **\n", part);
+		if (get_partition_info (dev_desc, part, &info)) {
+			printf ("** Bad partition %d **\n", part);
 			return 1;
 		}
 
-		if (strncmp((char *)info.type, BOOT_PART_TYPE,
-			    strlen(BOOT_PART_TYPE)) != 0) {
-			printf("** Invalid partition type \"%s\""
-			       " (expect \"" BOOT_PART_TYPE "\")\n", info.type);
+		if (strncmp((char *)info.type, BOOT_PART_TYPE, sizeof(info.type)) != 0) {
+			printf ("** Invalid partition type \"%.32s\""
+				" (expect \"" BOOT_PART_TYPE "\")\n",
+				info.type);
 			return 1;
 		}
-		printf("Loading file \"%s\" "
-		       "from %s device %d:%lu %s\n",
-		       filename, argv[1], dev, part, info.name);
+		printf ("Loading file \"%s\" "
+			"from %s device %d:%d (%.32s)\n",
+			filename,
+			argv[1], dev, part, info.name);
 	} else {
-		printf("Loading file \"%s\" from %s device %d\n",
-		       filename, argv[1], dev);
+		printf ("Loading file \"%s\" from %s device %d\n",
+			filename, argv[1], dev);
 	}
 
-	part_length = ext4fs_set_blk_dev(fs->dev_desc, part);
-	if (part_length == 0) {
-		printf("**Bad partition - %s %d:%lu **\n", argv[1], dev, part);
+
+	if ((part_length = ext4fs_set_blk_dev(dev_desc, part)) == 0) {
+		printf ("** Bad partition - %s %d:%d **\n",  argv[1], dev, part);
 		ext4fs_close();
 		return 1;
 	}
 
 	if (!ext4fs_mount(part_length)) {
-		printf("** Bad ext4 partition or disk - %s %d:%lu **\n",
-		       argv[1], dev, part);
+		printf ("** Bad ext4 partition or disk - %s %d:%d **\n",
+			argv[1], dev, part);
 		ext4fs_close();
 		return 1;
 	}
@@ -177,22 +187,23 @@ static int do_ext4_load(cmd_tbl_t *cmdtp, int flag, int argc,
 		ext4fs_close();
 		return 1;
 	}
-	if ((count < filelen) && (count != 0))
-		filelen = count;
+	if ((count < filelen) && (count != 0)) {
+	    filelen = count;
+	}
 
 	if (ext4fs_read((char *)addr, filelen) != filelen) {
-		printf("** Unable to read \"%s\" from %s %d:%lu **\n",
-		       filename, argv[1], dev, part);
+		printf("** Unable to read \"%s\" from %s %d:%d **\n",
+			filename, argv[1], dev, part);
 		ext4fs_close();
 		return 1;
 	}
 
 	ext4fs_close();
-	deinit_fs(fs->dev_desc);
+
 	/* Loading ok, update default load address */
 	load_addr = addr;
 
-	printf("%d bytes read\n", filelen);
+	printf ("%d bytes read\n", filelen);
 	sprintf(buf, "%X", filelen);
 	setenv("filesize", buf);
 
@@ -209,7 +220,7 @@ static int do_ext4_ls(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 	int part_length;
 
 	if (argc < 3)
-		return cmd_usage(cmdtp);
+	  return CMD_RET_USAGE;
 
 	dev = (int)simple_strtoul(argv[2], &ep, 16);
 	ext4_dev_desc = get_dev(argv[1], dev);

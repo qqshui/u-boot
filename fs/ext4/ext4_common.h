@@ -36,7 +36,8 @@
 #include <ext_common.h>
 #include <ext4fs.h>
 #include <malloc.h>
-#include <asm/errno.h>
+#include <errno.h>
+//#include <asm/errno.h>
 #if defined(CONFIG_CMD_EXT4_WRITE)
 #include "ext4_journal.h"
 #include "crc16.h"

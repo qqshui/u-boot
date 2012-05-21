@@ -236,7 +236,6 @@ ifdef SOC
 LIBS += $(CPUDIR)/$(SOC)/lib$(SOC).o
 endif
 ifeq ($(CPU),ixp)
-<<<<<<< HEAD
 LIBS += arch/arm/cpu/ixp/npe/libnpe.o
 endif
 ifeq ($(CONFIG_OF_EMBED),y)
@@ -245,7 +244,7 @@ endif
 LIBS += arch/$(ARCH)/lib/lib$(ARCH).o
 LIBS += fs/cramfs/libcramfs.o fs/fat/libfat.o fs/fdos/libfdos.o fs/jffs2/libjffs2.o \
 	fs/reiserfs/libreiserfs.o fs/ext2/libext2fs.o fs/yaffs2/libyaffs2.o \
-	fs/ubifs/libubifs.o
+	fs/ubifs/libubifs.o fs/ext4/libext4fs.o
 LIBS += net/libnet.o
 LIBS += disk/libdisk.o
 LIBS += drivers/bios_emulator/libatibiosemu.o
@@ -269,38 +268,6 @@ LIBS += drivers/pci/libpci.o
 LIBS += drivers/pcmcia/libpcmcia.o
 LIBS += drivers/power/libpower.o
 LIBS += drivers/spi/libspi.o
-=======
-LIBS += cpu/ixp/npe/libnpe.a
-endif
-LIBS += lib_$(ARCH)/lib$(ARCH).a
-LIBS += fs/cramfs/libcramfs.a fs/fat/libfat.a fs/fdos/libfdos.a fs/jffs2/libjffs2.a \
-	fs/reiserfs/libreiserfs.a fs/ext2/libext2fs.a fs/yaffs2/libyaffs2.a \
-	fs/ext4/libext4fs.a fs/ubifs/libubifs.a
-LIBS += net/libnet.a
-LIBS += disk/libdisk.a
-LIBS += drivers/bios_emulator/libatibiosemu.a
-LIBS += drivers/block/libblock.a
-LIBS += drivers/dma/libdma.a
-LIBS += drivers/fpga/libfpga.a
-LIBS += drivers/gpio/libgpio.a
-LIBS += drivers/hwmon/libhwmon.a
-LIBS += drivers/i2c/libi2c.a
-LIBS += drivers/input/libinput.a
-LIBS += drivers/misc/libmisc.a
-LIBS += drivers/mmc/libmmc.a
-LIBS += drivers/mtd/libmtd.a
-LIBS += drivers/mtd/nand/libnand.a
-LIBS += drivers/mtd/onenand/libonenand.a
-LIBS += drivers/mtd/ubi/libubi.a
-LIBS += drivers/mtd/spi/libspi_flash.a
-LIBS += drivers/net/libnet.a
-LIBS += drivers/net/phy/libphy.a
-LIBS += drivers/net/sk98lin/libsk98lin.a
-LIBS += drivers/pci/libpci.a
-LIBS += drivers/pcmcia/libpcmcia.a
-LIBS += drivers/power/libpower.a
-LIBS += drivers/spi/libspi.a
->>>>>>> EXT4 changes
 ifeq ($(CPU),mpc83xx)
 LIBS += drivers/qe/libqe.o
 LIBS += arch/powerpc/cpu/mpc8xxx/ddr/libddr.o
